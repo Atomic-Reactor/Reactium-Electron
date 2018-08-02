@@ -1,25 +1,31 @@
 const { app, BrowserWindow } = require('electron');
 const cmd = require('node-cmd');
+const fs = require('fs');
 
 let main;
 let splash;
 let reactium;
-let port = Number(process.env.APP_PORT || 3000);
+
+let ssrMode = process.env.SSR_MODE || 'off';
+let port    = Number(process.env.APP_PORT || 8000);
+let width   = Number(process.env.WIN_WIDTH || 1024);
+let height  = Number(process.env.WIN_HEIGHT || 768);
+
 
 const createMainWindow = () => {
 
     // Create the browser window.
     main = new BrowserWindow({
-        minWidth  : 1024,
-        minHeight : 768,
-        width     : 1024,
-        height    : 768,
+        minWidth  : width,
+        minHeight : height,
+        width     : width,
+        height    : height,
         show      : false,
     });
 
     main.once('ready-to-show', () => {
         main.show();
-        splash.close();
+        if (splash) { splash.close(); }
     });
 
     // Emitted when the window is closed.
@@ -32,21 +38,26 @@ const createMainWindow = () => {
 }
 
 const createSplashWindow = () => {
-    splash = new BrowserWindow({
-        width     : 640,
-        height    : 480,
-        frame     : false,
-    });
+    let splashFile = `${process.cwd()}/public/splash.html`;
 
-    splash.on('closed', () => {
-        splash = null;
-    });
+    if (fs.existsSync(splashFile)) {
 
-    splash.once('ready-to-show', () => {
-        splash.show();
-    });
+        splash = new BrowserWindow({
+            width     : 640,
+            height    : 480,
+            frame     : false,
+        });
 
-    splash.loadURL(`file://${__dirname}/public/splash.html`);
+        splash.on('closed', () => {
+            splash = null;
+        });
+
+        splash.once('ready-to-show', () => {
+            splash.show();
+        });
+
+        splash.loadURL(`file://${splashFile}`);
+    }
 
     serve();
 }
@@ -55,7 +66,8 @@ const serve = () => {
     if (reactium) {
         createMainWindow();
     } else {
-        reactium = cmd.run(`cross-env APP_PORT=${port} gulp local:ssr`);
+        let ssr = (String(ssrMode).toLowerCase() === 'on') ? ':ssr' : '';
+        reactium = cmd.run(`cross-env APP_PORT=${port} gulp local${ssr}`);
         reactium.stdout.on('data', (data) => {
             if (data.match(/ui external/i)) {
                 if (!main) { createMainWindow(); }
