@@ -1,6 +1,6 @@
 {
   "name": "reactium-electron",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "description": "A package for running Reactium as an Electron App",
   "main": "index.js",
   "keywords": [
