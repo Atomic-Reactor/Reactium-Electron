@@ -1,5 +1,7 @@
 # Reactium Electron
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/Atomic-Reactor/Reactium-Electron.svg)](https://greenkeeper.io/)
+
 Convert your Reactium App into a desktop app.
 
 
